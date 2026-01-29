@@ -58,7 +58,7 @@ class Dates {
 
 class MovieMovieDB {
     final bool adult;
-    final String backdropPath;
+    final String? backdropPath;
     final List<int> genreIds;
     final int id;
     final String originalLanguage;
@@ -74,7 +74,7 @@ class MovieMovieDB {
 
     MovieMovieDB({
         required this.adult,
-        required this.backdropPath,
+        this.backdropPath,
         required this.genreIds,
         required this.id,
         required this.originalLanguage,
