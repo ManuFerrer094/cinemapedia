@@ -1,6 +1,6 @@
-import 'package:cinemapedia/config/infrastructure/datasources/movies_datasource.dart';
-import 'package:cinemapedia/config/infrastructure/mappers/movie_mapper.dart';
-import 'package:cinemapedia/config/infrastructure/models/moviedb/moviedb_response.dart';
+import 'package:cinemapedia/domain/datasources/movies_datasource.dart';
+import 'package:cinemapedia/infrastructure/mappers/movie_mapper.dart';
+import 'package:cinemapedia/infrastructure/models/moviedb/moviedb_response.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:dio/dio.dart';
 import 'package:cinemapedia/config/constants/environment.dart';
