@@ -5,28 +5,18 @@ import 'package:cinemapedia/presentation/providers/movies/movies_providers.dart'
 import 'package:cinemapedia/presentation/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerStatefulWidget {
 
   static const name = 'home-screen';
 
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _HomeView(),
-    );
-  }
+  HomeScreenState createState() => HomeScreenState();
 }
 
-class _HomeView extends ConsumerStatefulWidget {
-  const _HomeView();
-
-  @override
-  __HomeViewState createState() => __HomeViewState();
-}
-
-class __HomeViewState extends ConsumerState<_HomeView> {
+class HomeScreenState extends ConsumerState<HomeScreen> {
+  int currentIndex = 0;
 
   @override
   void initState() {
@@ -37,13 +27,26 @@ class __HomeViewState extends ConsumerState<_HomeView> {
 
   @override
   Widget build(BuildContext context) {
-
     final nowPlayingMovies = ref.watch(nowPlayingMoviesProvider);
 
-    return Column(children: [
-      CustomAppbar(),
-      MoviesSlideshow(movies: nowPlayingMovies)
-    ],
-  );
+    return Scaffold(
+      body: ListView(
+        padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight),
+        children: [
+          CustomAppbar(),
+          MoviesSlideshow(movies: nowPlayingMovies),
+          MovieHorizontalListview(
+            movies: nowPlayingMovies,
+            label: 'En cines',
+            subLabel: 'Lunes 21',
+            loadNextPage: () => ref.read(nowPlayingMoviesProvider.notifier).loadNextPage(),
+          ),
+        ],
+      ),
+      bottomNavigationBar: CustomBottomNavigation(
+        currentIndex: currentIndex,
+        onTap: (index) => setState(() => currentIndex = index),
+      ),
+    );
   }
 }
