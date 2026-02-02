@@ -4,4 +4,8 @@ abstract class MoviesRepository {
   Future<List<Movie>> getNowPlaying({
     required int page,
   });
+  
+  Future<List<Movie>> getUpcoming({
+    required int page,
+  });
 }

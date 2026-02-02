@@ -6,7 +6,7 @@ import 'package:cinemapedia/infrastructure/models/moviedb/moviedb_response.dart'
 class MovieMapper {
   static Movie movieDBToEntity(MovieMovieDB movieDB) => Movie(
       adult: movieDB.adult,
-      backdropPath: movieDB.backdropPath != '' 
+      backdropPath: (movieDB.backdropPath != null && movieDB.backdropPath != '') 
         ? 'https://image.tmdb.org/t/p/w500${movieDB.backdropPath}' 
         : 'no-poster',
       genreIds: movieDB.genreIds.map((e) => e.toString()).toList(),
@@ -15,7 +15,7 @@ class MovieMapper {
       originalTitle: movieDB.originalTitle,
       overview: movieDB.overview,
       popularity: movieDB.popularity,
-      posterPath: movieDB.posterPath != '' 
+      posterPath: (movieDB.posterPath != null && movieDB.posterPath != '') 
         ? 'https://image.tmdb.org/t/p/w500${movieDB.posterPath}' 
         : 'no-poster',
       releaseDate: movieDB.releaseDate,
