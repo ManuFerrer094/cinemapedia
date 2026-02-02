@@ -52,19 +52,69 @@ class _MovieHorizontalListviewState extends State<MovieHorizontalListview> {
     const double titleHeight = 40;
 
     return SizedBox(
-      height: imageHeight + 120,
+      height: imageHeight + 180,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (widget.label != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(widget.label!, style: Theme.of(context).textTheme.titleMedium),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              widget.label!,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                   if (widget.subLabel != null)
-                    Text(widget.subLabel!, style: Theme.of(context).textTheme.bodySmall),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: colors.primary,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.primary.withOpacity(0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 14,
+                            color: colors.onPrimary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.subLabel!,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colors.onPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),

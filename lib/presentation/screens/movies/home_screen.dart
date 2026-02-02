@@ -24,12 +24,14 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
 
     ref.read(nowPlayingMoviesProvider.notifier).loadNextPage();
     ref.read(upcomingMoviesProvider.notifier).loadNextPage();
+    ref.read(popularMoviesProvider.notifier).loadNextPage();
   }
 
   @override
   Widget build(BuildContext context) {
     final nowPlayingMovies = ref.watch(nowPlayingMoviesProvider);
     final upcomingMovies = ref.watch(upcomingMoviesProvider);
+    final popularMovies = ref.watch(popularMoviesProvider);
 
     return Scaffold(
       body: ListView(
@@ -50,6 +52,13 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
             label: 'Próximamente',
             subLabel: 'En este mes',
             loadNextPage: () => ref.read(upcomingMoviesProvider.notifier).loadNextPage(),
+          ),
+
+          MovieHorizontalListview(
+            movies: popularMovies,
+            label: 'Populares',
+            subLabel: 'Recientemente',
+            loadNextPage: () => ref.read(popularMoviesProvider.notifier).loadNextPage(),
           ),
         ],
       ),
