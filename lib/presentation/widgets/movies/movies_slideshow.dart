@@ -1,8 +1,12 @@
+import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cinemapedia/presentation/providers/providers.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
-import 'dart:async';
+import 'package:animate_do/animate_do.dart';
 
-class MoviesSlideshow extends StatefulWidget {
+
+class MoviesSlideshow extends ConsumerStatefulWidget {
   final List<Movie> movies;
   
   const MoviesSlideshow({
@@ -11,100 +15,107 @@ class MoviesSlideshow extends StatefulWidget {
   });
 
   @override
-  State<MoviesSlideshow> createState() => _MoviesSlideshowState();
+  ConsumerState<MoviesSlideshow> createState() => _MoviesSlideshowState();
 }
 
-class _MoviesSlideshowState extends State<MoviesSlideshow> {
-  late PageController pageController;
-  int currentPage = 0;
-  Timer? autoPlayTimer;
-
+class _MoviesSlideshowState extends ConsumerState<MoviesSlideshow> {
   @override
   void initState() {
     super.initState();
-    pageController = PageController(viewportFraction: 0.8);
-    _startAutoPlay();
-  }
 
-  void _startAutoPlay() {
-    autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (widget.movies.isNotEmpty && mounted) {
-        final nextPage = (currentPage + 1) % widget.movies.length;
-        pageController.animateToPage(
-          nextPage,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    autoPlayTimer?.cancel();
-    pageController.dispose();
-    super.dispose();
+    if (widget.movies.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(moviesSlideshowProvider.notifier).setMovies(widget.movies);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.movies.isEmpty) {
-      return const SizedBox(
+    final colors = Theme.of(context).colorScheme;
+    final slideshowState = ref.watch(moviesSlideshowProvider);
+    final movies = slideshowState.movies.isEmpty ? widget.movies : slideshowState.movies;
+    final currentPage = slideshowState.currentPage;
+    
+    if (movies.isEmpty) {
+      return SizedBox(
         height: 250,
         child: Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            color: colors.primary,
+          ),
         ),
       );
     }
 
-    return SizedBox(
-      height: 250,
-      child: PageView.builder(
-        controller: pageController,
-        itemCount: widget.movies.length,
-        onPageChanged: (index) {
-          setState(() {
-            currentPage = index;
-          });
-        },
-        itemBuilder: (context, index) {
-          final movie = widget.movies[index];
-          final scale = currentPage == index ? 1.0 : 0.9;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 220,
+          child: Swiper(
+            itemCount: movies.length,
+            autoplay: true,
+            autoplayDelay: 3000,
+            viewportFraction: 0.86,
+            onIndexChanged: (index) {
+              ref.read(moviesSlideshowProvider.notifier).setCurrentPage(index);
+            },
+            itemBuilder: (context, index) {
+          final movie = movies[index];
+          final distanceFromCenter = (currentPage - index).abs().toDouble();
+          final scale = 1.0 - (distanceFromCenter * 0.1).clamp(0.0, 0.1);
           
           return Transform.scale(
             scale: scale,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Stack(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 0),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      offset: const Offset(0, 4),
+                      blurRadius: 8,
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
                   fit: StackFit.expand,
                   children: [
                     // Poster image
-                    Image.network(
-                      movie.posterPath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Icon(
-                            Icons.movie_outlined,
-                            size: 50,
-                            color: Colors.grey,
-                          ),
-                        );
-                      },
+                    FadeIn(
+                      duration: const Duration(milliseconds: 600),
+                      child: Image.network(
+                        movie.backdropPath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: colors.surfaceContainerHighest,
+                            child: Icon(
+                              Icons.movie_outlined,
+                              size: 50,
+                              color: colors.onSurfaceVariant,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                     
                     // Gradient overlay
                     Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black54,
+                            Colors.black.withOpacity(0.7),
                           ],
                         ),
                       ),
@@ -129,24 +140,6 @@ class _MoviesSlideshowState extends State<MoviesSlideshow> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.star,
-                                color: Colors.amber,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                movie.voteAverage.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     ),
@@ -154,9 +147,30 @@ class _MoviesSlideshowState extends State<MoviesSlideshow> {
                 ),
               ),
             ),
-          );
+          ));
         },
-      ),
+        ),
+        ),
+
+        const SizedBox(height: 10),
+
+        // External paginator (dots) below the carousel
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(movies.length, (i) {
+            final isActive = i == currentPage;
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: isActive ? 10 : 8,
+              height: isActive ? 10 : 8,
+              decoration: BoxDecoration(
+                color: isActive ? colors.primary : colors.secondary,
+                shape: BoxShape.circle,
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 }
