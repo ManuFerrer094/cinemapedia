@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cinemapedia/presentation/providers/providers.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:cinemapedia/config/helpers/responsive_helper.dart';
 
 
 class MoviesSlideshow extends ConsumerStatefulWidget {
@@ -36,10 +37,11 @@ class _MoviesSlideshowState extends ConsumerState<MoviesSlideshow> {
     final slideshowState = ref.watch(moviesSlideshowProvider);
     final movies = slideshowState.movies.isEmpty ? widget.movies : slideshowState.movies;
     final currentPage = slideshowState.currentPage;
+    final isDesktop = ResponsiveHelper.isDesktop();
     
     if (movies.isEmpty) {
       return SizedBox(
-        height: 250,
+        height: isDesktop ? 300 : 250,
         child: Center(
           child: CircularProgressIndicator(
             color: colors.primary,
@@ -52,12 +54,12 @@ class _MoviesSlideshowState extends ConsumerState<MoviesSlideshow> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          height: 220,
+          height: isDesktop ? 280 : 220, // Mayor altura en desktop
           child: Swiper(
             itemCount: movies.length,
             autoplay: true,
             autoplayDelay: 3000,
-            viewportFraction: 0.86,
+            viewportFraction: isDesktop ? 0.7 : 0.86, // Diferente fracción para desktop
             onIndexChanged: (index) {
               ref.read(moviesSlideshowProvider.notifier).setCurrentPage(index);
             },

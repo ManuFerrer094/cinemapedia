@@ -1,5 +1,8 @@
 import 'package:cinemapedia/config/helpers/human_formats.dart';
+import 'package:cinemapedia/config/helpers/responsive_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:go_router/go_router.dart';
@@ -26,8 +29,8 @@ class MovieHorizontalListview extends StatefulWidget {
 
 class _MovieHorizontalListviewState extends State<MovieHorizontalListview> {
 
-
   final scrollController = ScrollController();
+  final focusNode = FocusNode();
 
   @override
   void initState() {
@@ -39,42 +42,105 @@ class _MovieHorizontalListviewState extends State<MovieHorizontalListview> {
       if ( (scrollController.position.pixels + 200) >= scrollController.position.maxScrollExtent ) {
         widget.loadNextPage!();
       }
-
     });
-
   }
 
   @override
   void dispose() {
     scrollController.dispose();
+    focusNode.dispose();
     super.dispose();
+  }
+
+  void _scrollHorizontal(double delta) {
+    final currentPosition = scrollController.position.pixels;
+    final newPosition = (currentPosition + delta).clamp(
+      0.0, 
+      scrollController.position.maxScrollExtent
+    );
+    
+    scrollController.animateTo(
+      newPosition,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+    );
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      const scrollAmount = 200.0;
+      
+      switch (event.logicalKey) {
+        case LogicalKeyboardKey.arrowLeft:
+          _scrollHorizontal(-scrollAmount);
+          return true;
+        case LogicalKeyboardKey.arrowRight:
+          _scrollHorizontal(scrollAmount);
+          return true;
+      }
+    }
+    return false;
   }
 
 
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop();
+    
+    final listView = ListView.builder(
+      controller: scrollController,
+      itemCount: widget.movies.length,
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      itemBuilder: (context, index) {
+        return FadeInRight(child: _Slide(movie: widget.movies[index]));
+      },
+    );
+
     return SizedBox(
-      height: 350,
+      height: isDesktop ? 420 : 350,
       child: Column(
         children: [
-
-          if ( widget.title != null || widget.subTitle != null )
-            _Title(title: widget.title, subTitle: widget.subTitle ),
-
+          if (widget.title != null || widget.subTitle != null)
+            _Title(title: widget.title, subTitle: widget.subTitle),
 
           Expanded(
-            child: ListView.builder(
-              controller: scrollController,
-              itemCount: widget.movies.length,
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemBuilder: (context, index) {
-                return FadeInRight(child: _Slide(movie: widget.movies[index]));
-              },
-            )
+            child: isDesktop
+              ? Focus(
+                  focusNode: focusNode,
+                  onKeyEvent: (node, event) {
+                    return _handleKeyEvent(event) 
+                      ? KeyEventResult.handled 
+                      : KeyEventResult.ignored;
+                  },
+                  child: Listener(
+                    onPointerSignal: (event) {
+                      if (event is PointerScrollEvent) {
+                        // Convertir scroll vertical en scroll horizontal
+                        final scrollDelta = event.scrollDelta.dy;
+                        _scrollHorizontal(scrollDelta * 1.5); // Sensibilidad ajustada
+                      }
+                    },
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.grab,
+                      onEnter: (_) {
+                        // Dar foco cuando el mouse entra para que funcionen las teclas
+                        if (!focusNode.hasFocus) {
+                          focusNode.requestFocus();
+                        }
+                      },
+                      child: Scrollbar(
+                        controller: scrollController,
+                        thumbVisibility: true,
+                        trackVisibility: true,
+                        child: listView,
+                      ),
+                    ),
+                  ),
+                )
+              : listView,
           )
-
         ],
       ),
     );
@@ -92,6 +158,12 @@ class _Slide extends StatelessWidget {
   Widget build(BuildContext context) {
 
     final textStyles = Theme.of(context).textTheme;
+    final isDesktop = ResponsiveHelper.isDesktop();
+    
+    // Tamaños responsivos
+    final imageWidth = isDesktop ? 200.0 : 150.0;
+    final imageHeight = isDesktop ? 280.0 : 225.0; // Reducido para evitar overflow
+    final titleHeight = isDesktop ? 45.0 : 40.0;
 
     return Container(
       margin: const EdgeInsets.symmetric( horizontal: 8),
@@ -101,14 +173,14 @@ class _Slide extends StatelessWidget {
           
           //* Imagen
           SizedBox(
-            width: 150,
-            height: 225, // Altura fija para todas las imágenes
+            width: imageWidth,
+            height: imageHeight,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Image.network(
                 movie.posterPath,
                 fit: BoxFit.cover,
-                width: 150,
+                width: imageWidth,
                 loadingBuilder: (context, child, loadingProgress) {
                   if ( loadingProgress != null ) {
                     return const Padding(
@@ -130,25 +202,32 @@ class _Slide extends StatelessWidget {
 
           //* Title
           SizedBox(
-            width: 150,
-            height: 40,
+            width: imageWidth,
+            height: titleHeight,
             child: Text(
               movie.title,
-              maxLines: 2,
+              maxLines: isDesktop ? 3 : 2,
               style: textStyles.titleSmall,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
 
           //* Rating
           SizedBox(
-            width: 150,
+            width: imageWidth,
             child: Row(
               children: [
                 Icon( Icons.star_half_outlined, color: Colors.yellow.shade800 ),
                 const SizedBox( width: 3 ),
                 Text('${ movie.voteAverage }', style: textStyles.bodyMedium?.copyWith( color: Colors.yellow.shade800 )),
                 const Spacer(),
-                Text( HumanFormats.number(movie.popularity), style: textStyles.bodySmall ),
+                Expanded(
+                  child: Text( 
+                    HumanFormats.number(movie.popularity), 
+                    style: textStyles.bodySmall,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                ),
           
               ],
             ),

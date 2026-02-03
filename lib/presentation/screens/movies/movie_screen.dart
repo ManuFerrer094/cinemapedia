@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:cinemapedia/config/helpers/responsive_helper.dart';
 
 import 'package:cinemapedia/domain/entities/movie.dart';
 
@@ -88,20 +91,24 @@ class _MovieDetails extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 child: Image.network(
                   movie.posterPath,
-                  width: size.width * 0.3,
+                  width: ResponsiveHelper.isDesktop() ? 300 : size.width * 0.3,
                 ),
               ),
 
               const SizedBox( width: 10 ),
 
               // Descripción
-              SizedBox(
-                width: (size.width - 40) * 0.7,
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text( movie.title, style: textStyles.titleLarge ),
-                    Text( movie.overview ),
+                    const SizedBox(height: 10),
+                    Text( 
+                      movie.overview,
+                      style: textStyles.bodyMedium,
+                      textAlign: TextAlign.justify,
+                    ),
                   ],
                 ),
               )
@@ -136,45 +143,91 @@ class _MovieDetails extends StatelessWidget {
 }
 
 
-class _ActorsByMovie extends ConsumerWidget {
+class _ActorsByMovie extends ConsumerStatefulWidget {
 
   final String movieId;
 
   const _ActorsByMovie({required this.movieId});
 
   @override
-  Widget build(BuildContext context, ref) {
+  ConsumerState<_ActorsByMovie> createState() => _ActorsByMovieState();
+}
+
+class _ActorsByMovieState extends ConsumerState<_ActorsByMovie> {
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _scrollHorizontal(double delta) {
+    final currentPosition = _scrollController.position.pixels;
+    final newPosition = (currentPosition + delta).clamp(
+      0.0, 
+      _scrollController.position.maxScrollExtent
+    );
+    
+    _scrollController.animateTo(
+      newPosition,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+    );
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      const scrollAmount = 200.0;
+      
+      switch (event.logicalKey) {
+        case LogicalKeyboardKey.arrowLeft:
+          _scrollHorizontal(-scrollAmount);
+          return true;
+        case LogicalKeyboardKey.arrowRight:
+          _scrollHorizontal(scrollAmount);
+          return true;
+      }
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     final actorsByMovie = ref.watch( actorsByMovieProvider );
+    final isDesktop = ResponsiveHelper.isDesktop();
 
-    if ( actorsByMovie[movieId] == null ) {
+    if ( actorsByMovie[widget.movieId] == null ) {
       return const CircularProgressIndicator(strokeWidth: 2);
     }
-    final actors = actorsByMovie[movieId]!;
+    final actors = actorsByMovie[widget.movieId]!;
 
-    return SizedBox(
-      height: 300,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: actors.length,
-        itemBuilder: (context, index) {
-          final actor = actors[index];
+    final actorListView = ListView.builder(
+      controller: _scrollController,
+      scrollDirection: Axis.horizontal,
+      itemCount: actors.length,
+      itemBuilder: (context, index) {
+        final actor = actors[index];
+        final actorWidth = isDesktop ? 160.0 : 135.0;
 
-          return Container(
-            padding: const EdgeInsets.all(8.0),
-            width: 135,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        return Container(
+          padding: const EdgeInsets.all(8.0),
+          width: actorWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-                // Actor Photo
-                FadeInRight(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
-                      actor.profilePath,
-                      height: 180,
-                      width: 135,
+              // Actor Photo
+              FadeInRight(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(
+                    actor.profilePath,
+                      height: isDesktop ? 200 : 180,
+                      width: actorWidth,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -187,7 +240,7 @@ class _ActorsByMovie extends ConsumerWidget {
                 Text(actor.character ?? '', 
                   maxLines: 2,
                   style: const TextStyle( fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis ),
-              ),
+                ),
 
               ],
             ),
@@ -195,7 +248,42 @@ class _ActorsByMovie extends ConsumerWidget {
 
 
         },
-      ),
+      );
+
+    return SizedBox(
+      height: isDesktop ? 320 : 300,
+      child: isDesktop 
+        ? Focus(
+            focusNode: _focusNode,
+            onKeyEvent: (node, event) {
+              return _handleKeyEvent(event) 
+                ? KeyEventResult.handled 
+                : KeyEventResult.ignored;
+            },
+            child: Listener(
+              onPointerSignal: (event) {
+                if (event is PointerScrollEvent) {
+                  final scrollDelta = event.scrollDelta.dy;
+                  _scrollHorizontal(scrollDelta * 1.5);
+                }
+              },
+              child: MouseRegion(
+                cursor: SystemMouseCursors.grab,
+                onEnter: (_) {
+                  if (!_focusNode.hasFocus) {
+                    _focusNode.requestFocus();
+                  }
+                },
+                child: Scrollbar(
+                  controller: _scrollController,
+                  thumbVisibility: true,
+                  trackVisibility: true,
+                  child: actorListView,
+                ),
+              ),
+            ),
+          )
+        : actorListView,
     );
 
   }
