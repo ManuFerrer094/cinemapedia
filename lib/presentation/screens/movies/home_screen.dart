@@ -42,22 +42,22 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
           
           MovieHorizontalListview(
             movies: nowPlayingMovies,
-            label: 'En cines',
-            subLabel: 'Lunes 21',
+            title: 'En cines',
+            subTitle: 'Lunes 21',
             loadNextPage: () => ref.read(nowPlayingMoviesProvider.notifier).loadNextPage(),
           ),
           
           MovieHorizontalListview(
             movies: upcomingMovies,
-            label: 'Próximamente',
-            subLabel: 'En este mes',
+            title: 'Próximamente',
+            subTitle: 'En este mes',
             loadNextPage: () => ref.read(upcomingMoviesProvider.notifier).loadNextPage(),
           ),
 
           MovieHorizontalListview(
             movies: popularMovies,
-            label: 'Populares',
-            subLabel: 'Recientemente',
+            title: 'Populares',
+            subTitle: 'Recientemente',
             loadNextPage: () => ref.read(popularMoviesProvider.notifier).loadNextPage(),
           ),
         ],
