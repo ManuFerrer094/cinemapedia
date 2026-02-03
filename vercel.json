@@ -2,7 +2,7 @@
   "github": {
     "silent": true
   },
-  "buildCommand": "flutter build web --release",
+  "buildCommand": "export PATH=\"$PATH:/usr/local/flutter/bin\" && flutter build web --release",
   "outputDirectory": "./build/web",
   "installCommand": "if [ ! -d '/usr/local/flutter' ]; then git clone https://github.com/flutter/flutter.git /usr/local/flutter; fi && export PATH=\"$PATH:/usr/local/flutter/bin\" && flutter --version && flutter pub get",
   "framework": null,
