@@ -9,11 +9,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 Future<void> main() async {
   try {
     await dotenv.load(fileName: ".env");
-    Environment.debugApiKey(); // Debug para verificar que el API key se carga
+    print('✓ .env file loaded successfully');
   } catch (e) {
-    print('Error loading .env: $e');
-    // .env file doesn't exist in production, that's fine
+    print('ℹ .env file not found, using system environment variables');
   }
+  Environment.debugApiKey();
   runApp(
     const ProviderScope(
       child: MainApp(),
