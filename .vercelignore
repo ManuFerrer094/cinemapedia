@@ -1,0 +1,15 @@
+.dart_tool
+.git
+.gitignore
+.metadata
+.vscode
+android
+ios
+linux
+macos
+windows
+test
+.env
+*.iml
+README.md
+analysis_options.yaml
