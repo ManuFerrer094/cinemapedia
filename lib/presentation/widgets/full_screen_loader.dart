@@ -102,27 +102,6 @@ class _FullScreenLoaderState extends State<FullScreenLoader>
               ),
             ),
 
-            // Film strip moving horizontally
-            Positioned(
-              top: size.height * 0.06,
-              left: 0,
-              right: 0,
-              height: 90,
-              child: AnimatedBuilder(
-                animation: _filmController,
-                builder: (context, child) {
-                  final dx = (_filmController.value * 1.0) * 200 - 100;
-                  return Transform.translate(
-                    offset: Offset(-dx, 0),
-                    child: Opacity(
-                      opacity: 0.18,
-                      child: _FilmStrip(),
-                    ),
-                  );
-                },
-              ),
-            ),
-
             // Centro: carrete giratorio y emoji de palomitas
             Center(
               child: Column(

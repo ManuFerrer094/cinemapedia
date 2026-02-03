@@ -37,19 +37,18 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       theme: AppTheme().getTheme(),
-      home: Stack(
-        children: [
-          MaterialApp.router(
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme().getTheme(),
-            routerConfig: appRouter,
-          ),
-          if (_showLoader) const FullScreenLoader(),
-        ],
-      ),
+      routerConfig: appRouter,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child ?? const SizedBox(),
+            if (_showLoader) const FullScreenLoader(),
+          ],
+        );
+      },
     );
   }
 }

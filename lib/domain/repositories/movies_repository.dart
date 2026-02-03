@@ -8,4 +8,8 @@ abstract class MoviesRepository {
   Future<List<Movie>> getUpcoming({
     required int page,
   });
+
+  Future<List<Movie>> getPopular({
+    required int page,
+  });
 }
