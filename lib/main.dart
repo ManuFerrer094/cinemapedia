@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cinemapedia/config/theme/app_theme.dart';
 import 'package:cinemapedia/config/router/app_router.dart';
+import 'package:cinemapedia/config/constants/environment.dart';
 import 'package:cinemapedia/presentation/widgets/full_screen_loader.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +9,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 Future<void> main() async {
   try {
     await dotenv.load(fileName: ".env");
+    Environment.debugApiKey(); // Debug para verificar que el API key se carga
   } catch (e) {
+    print('Error loading .env: $e');
     // .env file doesn't exist in production, that's fine
   }
   runApp(

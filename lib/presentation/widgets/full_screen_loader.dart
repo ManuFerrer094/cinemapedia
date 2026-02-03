@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class FullScreenLoader extends StatefulWidget {
-  const FullScreenLoader({Key? key}) : super(key: key);
+  const FullScreenLoader({super.key});
 
   @override
   State<FullScreenLoader> createState() => _FullScreenLoaderState();
@@ -73,7 +73,6 @@ class _FullScreenLoaderState extends State<FullScreenLoader>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return Material(
       color: Colors.transparent,
       child: SizedBox.expand(
@@ -193,7 +192,7 @@ class _FullScreenLoaderState extends State<FullScreenLoader>
 
 class _FilmReel extends StatelessWidget {
   final double size;
-  const _FilmReel({Key? key, this.size = 100}) : super(key: key);
+  const _FilmReel({super.key, this.size = 100});
 
   @override
   Widget build(BuildContext context) {
@@ -230,57 +229,6 @@ class _FilmReel extends StatelessWidget {
             }),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _FilmStrip extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final width = constraints.maxWidth;
-      final repeats = (width / 220).ceil() + 2;
-      return Row(
-        children: List.generate(repeats, (i) => _stripSegment()),
-      );
-    });
-  }
-
-  Widget _stripSegment() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.white24, width: 1),
-      ),
-      width: 200,
-      height: 90,
-      child: Row(
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(4, (_) => _hole()),
-          ),
-          const Spacer(),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(4, (_) => _hole()),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _hole() {
-    return Container(
-      width: 10,
-      height: 14,
-      decoration: BoxDecoration(
-        color: Colors.white24,
-        borderRadius: BorderRadius.circular(3),
       ),
     );
   }
