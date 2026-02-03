@@ -6,7 +6,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> main() async {
-  await dotenv.load(fileName: ".env");
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    // .env file doesn't exist in production, that's fine
+  }
   runApp(
     const ProviderScope(
       child: MainApp(),
