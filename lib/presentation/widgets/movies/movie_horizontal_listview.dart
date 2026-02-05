@@ -223,7 +223,7 @@ class _Slide extends StatelessWidget {
                 const Spacer(),
                 Expanded(
                   child: Text( 
-                    HumanFormats.number(movie.popularity), 
+                    HumanFormats.number(movie.popularity, 1), 
                     style: textStyles.bodySmall,
                     overflow: TextOverflow.ellipsis,
                   )

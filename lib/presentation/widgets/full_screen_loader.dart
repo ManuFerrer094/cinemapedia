@@ -192,7 +192,7 @@ class _FullScreenLoaderState extends State<FullScreenLoader>
 
 class _FilmReel extends StatelessWidget {
   final double size;
-  const _FilmReel({super.key, this.size = 100});
+  const _FilmReel({this.size = 100});
 
   @override
   Widget build(BuildContext context) {
