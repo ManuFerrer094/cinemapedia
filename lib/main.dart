@@ -1,3 +1,4 @@
+import 'package:cinemapedia/config/database/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cinemapedia/config/theme/app_theme.dart';
 import 'package:cinemapedia/config/router/app_router.dart';
@@ -7,13 +8,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> main() async {
-  try {
-    await dotenv.load(fileName: ".env");
-    print('✓ .env file loaded successfully');
-  } catch (e) {
-    print('ℹ .env file not found, using system environment variables');
-  }
-  Environment.debugApiKey();
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(
     const ProviderScope(
       child: MainApp(),

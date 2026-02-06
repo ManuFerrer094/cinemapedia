@@ -293,13 +293,21 @@ class _ActorsByMovieState extends ConsumerState<_ActorsByMovie> {
 
 
 
-class _CustomSliverAppBar extends StatelessWidget {
+class _CustomSliverAppBar extends StatefulWidget {
 
   final Movie movie;
 
   const _CustomSliverAppBar({
     required this.movie
   });
+
+  @override
+  State<_CustomSliverAppBar> createState() => _CustomSliverAppBarState();
+}
+
+class _CustomSliverAppBarState extends State<_CustomSliverAppBar> {
+
+  bool isFavorite = false;
 
   @override
   Widget build(BuildContext context) {
@@ -312,17 +320,12 @@ class _CustomSliverAppBar extends StatelessWidget {
       foregroundColor: Colors.white,
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        // title: Text( 
-        //   movie.title,
-        //   style: const TextStyle(fontSize: 20),
-        //   textAlign: TextAlign.start,
-        // ),
         background: Stack(
           children: [
 
             SizedBox.expand(
               child: Image.network(
-                movie.posterPath,
+                widget.movie.posterPath,
                 fit: BoxFit.cover,
                 loadingBuilder: (context, child, loadingProgress) {
                   if ( loadingProgress != null ) return const SizedBox();
@@ -359,6 +362,44 @@ class _CustomSliverAppBar extends StatelessWidget {
                     ]
                   )
                 )
+              ),
+            ),
+
+            const SizedBox.expand(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.centerLeft,
+                    stops: [0.0, 0.2],
+                    colors: [
+                      Colors.black87,
+                      Colors.transparent,
+                    ]
+                  )
+                )
+              ),
+            ),
+
+            // Botón de favorito
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isFavorite = !isFavorite;
+                      });
+                    },
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.white,
+                      size: 30,
+                    ),
+                  ),
+                ),
               ),
             ),
 
