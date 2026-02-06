@@ -9,6 +9,7 @@ import 'package:cinemapedia/domain/entities/movie.dart';
 
 import 'package:cinemapedia/presentation/providers/movies/movie_info_provider.dart';
 import 'package:cinemapedia/presentation/providers/actors/actors_by_movie_provider.dart';
+import 'package:cinemapedia/presentation/providers/storage/favorite_movies_provider.dart';
 
 
 class MovieScreen extends ConsumerStatefulWidget {
@@ -293,7 +294,7 @@ class _ActorsByMovieState extends ConsumerState<_ActorsByMovie> {
 
 
 
-class _CustomSliverAppBar extends StatefulWidget {
+class _CustomSliverAppBar extends ConsumerWidget {
 
   final Movie movie;
 
@@ -302,15 +303,10 @@ class _CustomSliverAppBar extends StatefulWidget {
   });
 
   @override
-  State<_CustomSliverAppBar> createState() => _CustomSliverAppBarState();
-}
-
-class _CustomSliverAppBarState extends State<_CustomSliverAppBar> {
-
-  bool isFavorite = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    
+    final favoriteMovies = ref.watch(favoriteMoviesProvider);
+    final isFavorite = favoriteMovies[movie.id] != null;
 
     final size = MediaQuery.of(context).size;
 
@@ -325,7 +321,7 @@ class _CustomSliverAppBarState extends State<_CustomSliverAppBar> {
 
             SizedBox.expand(
               child: Image.network(
-                widget.movie.posterPath,
+                movie.posterPath,
                 fit: BoxFit.cover,
                 loadingBuilder: (context, child, loadingProgress) {
                   if ( loadingProgress != null ) return const SizedBox();
@@ -388,10 +384,10 @@ class _CustomSliverAppBarState extends State<_CustomSliverAppBar> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        isFavorite = !isFavorite;
-                      });
+                    onPressed: () async {
+                      await ref
+                          .read(favoriteMoviesProvider.notifier)
+                          .toggleFavorite(movie);
                     },
                     icon: Icon(
                       isFavorite ? Icons.favorite : Icons.favorite_border,
